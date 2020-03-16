@@ -39,12 +39,17 @@ def index():
 @app.route('/view/<date>/')
 def view(date):
     db = dbcon.get_db()
+
     cur = db.execute("select * from log_date where entry_date=?", [date])
     result = cur.fetchone()
     d = datetime.strptime(str(result["entry_date"]), "%Y%m%d")
     pretty_date = datetime.strftime(d, "%B %d, %Y")
 
-    return render_template("day.html", pretty_date=pretty_date)
+    food_cur = db.execute("select id, name from food")
+    food_results = food_cur.fetchall()
+
+    return render_template("day.html", pretty_date=pretty_date,
+                            food_results=food_results)
 
 @app.route("/food", methods=["GET","POST"])
 def food():
