@@ -36,10 +36,14 @@ def index():
 
     return render_template('home.html', results=date_result)
 
-@app.route('/view/<date>/')
+@app.route('/view/<date>/', methods=["GET","POST"])
 def view(date):
     db = dbcon.get_db()
 
+    if request.method == "POST":
+        food_id = request.form.get("food-select")
+        return f"<h1>food {food_id} added to day {date}"
+    
     cur = db.execute("select * from log_date where entry_date=?", [date])
     result = cur.fetchone()
     d = datetime.strptime(str(result["entry_date"]), "%Y%m%d")
@@ -48,7 +52,7 @@ def view(date):
     food_cur = db.execute("select id, name from food")
     food_results = food_cur.fetchall()
 
-    return render_template("day.html", pretty_date=pretty_date,
+    return render_template("day.html", entry_date=result["entry_date"], pretty_date=pretty_date,
                             food_results=food_results)
 
 @app.route("/food", methods=["GET","POST"])
