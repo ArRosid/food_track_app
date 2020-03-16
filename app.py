@@ -40,9 +40,15 @@ def index():
 def view(date):
     db = dbcon.get_db()
 
+    # get the id of date
+    date_cur = db.execute("select * from log_date where entry_date=?", [date])
+    date_result = date_cur.fetchone()
+
     if request.method == "POST":
         food_id = request.form.get("food-select")
-        return f"<h1>food {food_id} added to day {date}"
+        db.execute("insert into food_date (food_id, log_date_id) values (?,?)",
+                    [food_id, date_result["id"]])
+        db.commit()
     
     cur = db.execute("select * from log_date where entry_date=?", [date])
     result = cur.fetchone()
