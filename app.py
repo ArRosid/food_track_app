@@ -27,7 +27,7 @@ def index():
                         from log_date
                         left join food_date on food_date.log_date_id = log_date.id
                         left join food on food.id = food_date.food_id
-                        group by log_date.id order by entry_date desc''')
+                        group by log_date.id order by log_date.entry_date desc''')
     results = cur.fetchall()
 
     date_result = []
