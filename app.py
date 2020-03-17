@@ -30,6 +30,9 @@ def index():
 
     for r in results:
         single_date = {}
+
+        single_date["entry_date"] = r["entry_date"]
+        
         d = datetime.strptime(str(r["entry_date"]), '%Y%m%d')
         single_date["pretty_date"] = datetime.strftime(d, "%B %d, %Y") #%B for month in word
         date_result.append(single_date)
