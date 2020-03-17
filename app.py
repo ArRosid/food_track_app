@@ -23,7 +23,11 @@ def index():
                     [database_date])
         db.commit()
 
-    cur = db.execute("select * from log_date order by entry_date desc")
+    cur = db.execute('''select log_date.entry_date, sum(food.protein) as protein, sum(food.carbohydrates) as carbohydrates , sum(food.fat) as fat, sum(food.calories) as calories
+                        from log_date
+                        left join food_date on food_date.log_date_id = log_date.id
+                        left join food on food.id = food_date.food_id
+                        group by log_date.id order by entry_date desc''')
     results = cur.fetchall()
 
     date_result = []
@@ -32,7 +36,11 @@ def index():
         single_date = {}
 
         single_date["entry_date"] = r["entry_date"]
-        
+        single_date["protein"] = r["protein"]
+        single_date["carbohydrates"] = r["carbohydrates"]
+        single_date["fat"] = r["fat"]
+        single_date["calories"] = r["calories"]
+
         d = datetime.strptime(str(r["entry_date"]), '%Y%m%d')
         single_date["pretty_date"] = datetime.strftime(d, "%B %d, %Y") #%B for month in word
         date_result.append(single_date)
