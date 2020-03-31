@@ -6,8 +6,10 @@ app = Flask(__name__)
 
 @app.teardown_appcontext
 def close_db(error):
-    if hasattr(g, 'sqlite_db'):
-        g.sqlite_db.close()
+    if hasattr(g, 'postgres_db_conn'):
+        g.postgres_db_conn.close()
+    if hasattr(g, 'postgres_db_cur'):
+        g.postgres_db_cur.close()
 
 @app.route('/', methods=["GET","POST"])
 def index():
@@ -19,16 +21,18 @@ def index():
         dt = datetime.strptime(date, "%Y-%m-%d")
         database_date = datetime.strftime(dt, "%Y%m%d")
         
-        db.execute("insert into log_date (entry_date) values (?)",
-                    [database_date])
-        db.commit()
+        db.execute("insert into log_date (entry_date) values (%s)",
+                    (database_date,))
 
-    cur = db.execute('''select log_date.entry_date, sum(food.protein) as protein, sum(food.carbohydrates) as carbohydrates , sum(food.fat) as fat, sum(food.calories) as calories
-                        from log_date
-                        left join food_date on food_date.log_date_id = log_date.id
-                        left join food on food.id = food_date.food_id
-                        group by log_date.id order by log_date.entry_date desc''')
-    results = cur.fetchall()
+    db.execute('''select log_date.entry_date, sum(food.protein) as protein, 
+                        sum(food.carbohydrates) as carbohydrates , 
+                        sum(food.fat) as fat, sum(food.calories) as calories
+                    from log_date
+                    left join food_date on food_date.log_date_id = log_date.id
+                    left join food on food.id = food_date.food_id
+                    group by log_date.id order by log_date.entry_date desc''')
+
+    results = db.fetchall()
 
     date_result = []
 
@@ -52,29 +56,29 @@ def view(date):
     db = dbcon.get_db()
 
     # get the id of date
-    date_cur = db.execute("select * from log_date where entry_date=?", [date])
-    date_result = date_cur.fetchone()
+    db.execute("select * from log_date where entry_date=%s", (date,))
+    date_result = db.fetchone()
 
     if request.method == "POST":
         food_id = request.form.get("food-select")
-        db.execute("insert into food_date (food_id, log_date_id) values (?,?)",
-                    [food_id, date_result["id"]])
-        db.commit()
+        db.execute("insert into food_date (food_id, log_date_id) values (%s,%s)",
+                    (food_id, date_result["id"],))
     
-    cur = db.execute("select * from log_date where entry_date=?", [date])
-    result = cur.fetchone()
+    db.execute("select * from log_date where entry_date=%s", (date,))
+    result = db.fetchone()
+
     d = datetime.strptime(str(result["entry_date"]), "%Y%m%d")
     pretty_date = datetime.strftime(d, "%B %d, %Y")
 
-    food_cur = db.execute("select id, name from food")
-    food_results = food_cur.fetchall()
+    db.execute("select id, name from food")
+    food_results = db.fetchall()
 
-    log_cur = db.execute('''select food.name, food.protein, food.carbohydrates, food.fat, food.calories
+    db.execute('''select food.name, food.protein, food.carbohydrates, food.fat, food.calories
                             from log_date
                             join food_date on food_date.log_date_id = log_date.id 
                             join food on food.id = food_date.food_id 
-                            where log_date.entry_date = ? ''', [date])
-    log_results = log_cur.fetchall()
+                            where log_date.entry_date = %s ''', (date,))
+    log_results = db.fetchall()
 
     totals = {}
     totals['protein'] = 0
@@ -105,12 +109,11 @@ def food():
 
         calories = protein * 4 + carbohydrates * 4 + fat * 9
         db.execute("insert into food (name, protein, carbohydrates, fat, calories)\
-                    values (?,?,?,?,?)",
-                    [food_name, protein, carbohydrates, fat, calories])
-        db.commit()
+                    values (%s,%s,%s,%s,%s)",
+                    (food_name, protein, carbohydrates, fat, calories,))
 
-    cur = db.execute("select * from food")
-    results = cur.fetchall()
+    db.execute("select * from food")
+    results = db.fetchall()
 
     return render_template("add_food.html", results=results)
 
