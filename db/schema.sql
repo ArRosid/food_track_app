@@ -1,10 +1,10 @@
 create table log_date (
-    id integer primary key autoincrement,
+    id serial primary key,
     entry_date date not null
 );
 
 create table food (
-    id integer primary key autoincrement,
+    id serial primary key,
     name text not null,
     protein integer not null,
     carbohydrates integer not null,
