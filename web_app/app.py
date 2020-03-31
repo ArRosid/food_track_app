@@ -45,7 +45,7 @@ def index():
         single_date["fat"] = r["fat"]
         single_date["calories"] = r["calories"]
 
-        d = datetime.strptime(str(r["entry_date"]), '%Y%m%d')
+        d = datetime.strptime(str(r["entry_date"]), '%Y-%m-%d')
         single_date["pretty_date"] = datetime.strftime(d, "%B %d, %Y") #%B for month in word
         date_result.append(single_date)
 
@@ -67,7 +67,7 @@ def view(date):
     db.execute("select * from log_date where entry_date=%s", (date,))
     result = db.fetchone()
 
-    d = datetime.strptime(str(result["entry_date"]), "%Y%m%d")
+    d = datetime.strptime(str(result["entry_date"]), "%Y-%m-%d")
     pretty_date = datetime.strftime(d, "%B %d, %Y")
 
     db.execute("select id, name from food")
