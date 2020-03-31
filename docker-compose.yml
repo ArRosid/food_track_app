@@ -1,7 +1,7 @@
 version: '3.7'
 
 services: 
-    web_app:
+    web_app_food_track:
         build: ./web_app
         command: python app.py
         restart: unless-stopped
@@ -13,7 +13,7 @@ services:
             - ./.env.dev
         depends_on: 
             - db
-    db:
+    db_food_track:
         image: postgres:12-alpine
         volumes: 
             - postgres_data:/var/lib/postgresql/data/
