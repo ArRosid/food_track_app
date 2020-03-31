@@ -12,7 +12,7 @@ services:
         env_file: 
             - ./.env.dev
         depends_on: 
-            - db
+            - db_food_track
     db_food_track:
         image: postgres:12-alpine
         volumes: 

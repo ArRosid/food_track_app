@@ -14,7 +14,7 @@ services:
         environment: 
             - VIRTUAL_HOST=food-track.arrosid.com
         depends_on: 
-            - db
+            - db_food_track
     db_food_track:
         image: postgres:12-alpine
         volumes: 
